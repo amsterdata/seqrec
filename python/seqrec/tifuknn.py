@@ -48,58 +48,7 @@ class TIFUKNN:
         end = datetime.datetime.now()
         print('Rust reps', (end-start).total_seconds() * 1000)
 
-
-        # start = datetime.datetime.now()
-        # basket_reps = {}
-        #
-        # for basket in basket_items_dict:
-        #     rep = np.zeros(self.num_items)
-        #     for item in basket_items_dict[basket]:
-        #         rep[item] = 1
-        #     basket_reps[basket] = rep
-        #
-        # user_reps = []
-        #
-        # for user in range(self.num_users):
-        #
-        #     rep = np.zeros(self.num_items)
-        #
-        #     baskets = user_baskets_dict[user]
-        #     group_size = math.ceil(len(baskets) / self.m)
-        #     addition = (group_size * self.m) - len(baskets)
-        #
-        #     basket_groups = []
-        #     basket_groups.append(baskets[:group_size - addition])
-        #     for i in range(self.m - 1):
-        #         basket_groups.append(baskets[group_size - addition + (i * group_size):group_size - addition + ((i + 1) * group_size)])
-        #
-        #     for i in range(self.m):
-        #         group_rep = np.zeros(self.num_items)
-        #         for j in range(1, len(basket_groups[i]) + 1):
-        #             basket = basket_groups[i][j-1]
-        #             basket_rep = np.array(basket_reps[basket]) * math.pow(self.rb, group_size-j)
-        #             group_rep += basket_rep
-        #         group_rep /= group_size
-        #
-        #         rep += np.array(group_rep) * math.pow(self.rg, self.m-i)
-        #
-        #     rep /= self.m
-        #     user_reps.append(rep)
-        #
-        # end = datetime.datetime.now()
-        # print('User representations', (end-start).total_seconds() * 1000)
-        #
-        # start = datetime.datetime.now()
-#        self.user_reps = np.array(user_reps)  # TODO use sparse rep
-#        nbrs = NearestNeighbors(n_neighbors=self.k + 1 + self.kplus, algorithm='brute', metric='cosine') \
-#            .fit(user_reps)
-#
-#        # We need to make sure that we don't receive neighbors with zero overlap, therefore a radius query is required
-#        distances, indices = nbrs.radius_neighbors(X=user_reps, radius=0.99, return_distance=True, sort_results=True)
-#        how_many = self.k + 1 + self.kplus
-#        for indices_for_one in indices:
-#            self.nn_indices.append(indices_for_one[:how_many])
-#
+        start = datetime.datetime.now()
         self.user_reps = np.array(user_reps)
         representations = csr_matrix(self.user_reps)
 
@@ -115,9 +64,6 @@ class TIFUKNN:
 
 
     def retrieve_for(self, user):
-        #how_many = self.k + 1 + self.kplus
-        # Skip user itself
-        #return self.nn_indices[user][1:how_many]
         how_many = self.k + self.kplus
         all = sorted(self.caboose.topk(user), key = lambda x: x[1], reverse=True)
         return all[:how_many]
@@ -136,7 +82,7 @@ class TIFUKNN:
 
         nn_rep /= len(neighbors)
 
-        final_rep = (user_rep * self.alpha + (1-self.alpha) * nn_rep).tolist()
+        final_rep = (user_rep * self.alpha + (1 - self.alpha) * nn_rep).tolist()
         top_items = sorted(range(len(final_rep)), key=lambda pos: final_rep[pos], reverse=True)
 
         return top_items[:how_many]
