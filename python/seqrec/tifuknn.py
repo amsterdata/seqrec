@@ -65,7 +65,7 @@ class TIFUKNN:
 
     def retrieve_for(self, user):
         how_many = self.k + self.kplus
-        all = sorted(self.caboose.topk(user), key = lambda x: x[1], reverse=True)
+        all = sorted(self.caboose.topk(user), key=lambda x: x[1], reverse=True)
         return all[:how_many]
 
 
